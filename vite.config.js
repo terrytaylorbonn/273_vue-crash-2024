@@ -1,3 +1,4 @@
+// tailwind.config.js/vite.config.js
 import { fileURLToPath, URL } from 'node:url'
 // import tailwindcss from '@tailwindcss/vite'
 
@@ -15,6 +16,13 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },  
   },
   resolve: {
     alias: {
