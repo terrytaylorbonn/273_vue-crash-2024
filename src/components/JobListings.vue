@@ -3,8 +3,11 @@
 <script setup>
 import { RouterLink } from 'vue-router';
 import JobListing from './JobListing.vue';
-import jobData from '@/jobs.json';
-import { ref, defineProps } from 'vue';
+// import jobData from '@/jobs.json';
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
+import axios from 'axios';
+// import { ref, defineProps, onMounted } from 'vue';
+import { reactive, defineProps, onMounted } from 'vue';
 
 defineProps({
   limit: Number,
@@ -14,17 +17,44 @@ defineProps({
   },
 });
 
+const state = reactive({
+  jobs: [],
+  isLoading: true,
+});
 
-const jobs = ref(jobData);
-console.log(jobs.value);
+// const jobs = ref(jobData);
+// const jobs = ref([]);
+// console.log(jobs.value);
+
+onMounted(async () => {
+  try {
+    // const response = await axios.get('/api/jobs');
+    const response = await axios.get('http://localhost:5000/jobs');
+    state.jobs = response.data;
+    // jobs.value = response.data;
+  } catch (error) {
+    console.error('Error fetching jobs', error);
+  } finally {
+    state.isLoading = false;
+  }
+});
+
 </script>
 
 <template>
    <section class="bg-blue-50 px-4 py-10">
     <div class="container-xl  lg:container m-auto">
       <h2 class="text-3xl font-bold text-green-500 mb-6 text-center">Browse jobsss</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <JobListing v-for="job in jobs.slice(0, limit || jobs.length)" :key="job.id" :job="job"/>
+      <!-- Show loading spinner while loading is true -->
+        <div v-if="state.isLoading" class="text-center text-gray-500 py-6">
+        <PulseLoader />
+      </div>
+
+      <!-- Shoe job listing when done loading -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> -->
+        <!-- <JobListing v-for="job in jobs.slice(0, limit || jobs.length)" :key="job.id" :job="job"/> -->
+        <JobListing v-for="job in state.jobs.slice(0, limit || state.jobs.length)" :key="job.id" :job="job"/>
             <!-- {{ job.title }} -->
             <!-- </div> -->
       </div>
