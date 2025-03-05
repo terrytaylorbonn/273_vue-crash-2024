@@ -1,4 +1,4 @@
-<!-- src/views/AddJobView.vue search 25.0305 -->
+<!-- src/views/AddJobView.vue -->
 
 <script setup>
 import router from '@/router';
@@ -40,8 +40,7 @@ const handleSubmit = async () => {
 //   console.log(newJob);
 
   try {
-    // 25.0305 const response = await axios.post('/api/jobs', newJob);
-    const response = await axios.post('https://two73b-json-server.onrender.com/jobs', newJob);
+    const response = await axios.post('/api/jobs', newJob);
     toast.success('Job Added Successfully');
     router.push(`/jobs/${response.data.id}`);
     console.log('toast workedddddddddddd');

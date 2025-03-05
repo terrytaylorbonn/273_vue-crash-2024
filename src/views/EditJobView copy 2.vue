@@ -1,13 +1,16 @@
-<!-- src/views/AddJobView.vue search 25.0305 -->
-
 <script setup>
 import router from '@/router';
-import { reactive } from 'vue';
+import { reactive, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import axios from 'axios';
 
+const route = useRoute();
+
+const jobId = route.params.id;
+
 const form = reactive({
-  type: 'Part-Time',
+  type: 'Full-Time',
   title: '',
   description: '',
   salary: '',
@@ -20,11 +23,15 @@ const form = reactive({
   },
 });
 
+const state = reactive({
+  job: {},
+  isLoading: true,
+});
+
 const toast = useToast();
 
 const handleSubmit = async () => {
-    // console.log(form.title);
-  const newJob = {
+  const updatedJob = {
     title: form.title,
     type: form.type,
     location: form.location,
@@ -37,28 +44,47 @@ const handleSubmit = async () => {
       contactPhone: form.company.contactPhone,
     },
   };
-//   console.log(newJob);
 
   try {
-    // 25.0305 const response = await axios.post('/api/jobs', newJob);
-    const response = await axios.post('https://two73b-json-server.onrender.com/jobs', newJob);
-    toast.success('Job Added Successfully');
+    const response = await axios.put(`/api/jobs/${jobId}`, updatedJob);
+    toast.success('Job Updated Successfully');
     router.push(`/jobs/${response.data.id}`);
-    console.log('toast workedddddddddddd');
   } catch (error) {
     console.error('Error fetching job', error);
     toast.error('Job Was Not Added');
   }
 };
+
+onMounted(async () => {
+  try {
+    const response = await axios.get(`/api/jobs/${jobId}`);
+    state.job = response.data;
+    // Populate inputs
+    form.type = state.job.type;
+    form.title = state.job.title;
+    form.description = state.job.description;
+    form.salary = state.job.salary;
+    form.location = state.job.location;
+    form.company.name = state.job.company.name;
+    form.company.description = state.job.company.description;
+    form.company.contactEmail = state.job.company.contactEmail;
+    form.company.contactPhone = state.job.company.contactPhone;
+  } catch (error) {
+    console.error('Error fetching job', error);
+  } finally {
+    state.isLoading = false;
+  }
+});
 </script>
 
-<template>    <section class="bg-green-50">
+<template>
+  <section class="bg-green-50">
     <div class="container m-auto max-w-2xl py-24">
       <div
         class="bg-white px-6 py-8 mb-4 shadow-md rounded-md border m-4 md:m-0"
       >
         <form @submit.prevent="handleSubmit">
-          <h2 class="text-3xl text-center font-semibold mb-6">Add Job</h2>
+          <h2 class="text-3xl text-center font-semibold mb-6">Edit Job</h2>
 
           <div class="mb-4">
             <label for="type" class="block text-gray-700 font-bold mb-2"
@@ -83,8 +109,8 @@ const handleSubmit = async () => {
               >Job Listing Name</label
             >
             <input
-               v-model="form.title"
               type="text"
+              v-model="form.title"
               id="name"
               name="name"
               class="border rounded w-full py-2 px-3 mb-2"
@@ -93,14 +119,12 @@ const handleSubmit = async () => {
             />
           </div>
           <div class="mb-4">
-            <label
-              for="description"
-              class="block text-gray-700 font-bold mb-2"
+            <label for="description" class="block text-gray-700 font-bold mb-2"
               >Description</label
             >
             <textarea
-              v-model="form.description"
               id="description"
+              v-model="form.description"
               name="description"
               class="border rounded w-full py-2 px-3"
               rows="4"
@@ -113,8 +137,8 @@ const handleSubmit = async () => {
               >Salary</label
             >
             <select
-               v-model="form.salary"
               id="salary"
+              v-model="form.salary"
               name="salary"
               class="border rounded w-full py-2 px-3"
               required
@@ -134,12 +158,10 @@ const handleSubmit = async () => {
           </div>
 
           <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2">
-              Location
-            </label>
+            <label class="block text-gray-700 font-bold mb-2"> Location </label>
             <input
-            v-model="form.location"
               type="text"
+              v-model="form.location"
               id="location"
               name="location"
               class="border rounded w-full py-2 px-3 mb-2"
@@ -155,8 +177,8 @@ const handleSubmit = async () => {
               >Company Name</label
             >
             <input
-            v-model="form.company.name"
               type="text"
+              v-model="form.company.name"
               id="company"
               name="company"
               class="border rounded w-full py-2 px-3"
@@ -171,8 +193,8 @@ const handleSubmit = async () => {
               >Company Description</label
             >
             <textarea
-               v-model="form.company.description"
               id="company_description"
+              v-model="form.company.description"
               name="company_description"
               class="border rounded w-full py-2 px-3"
               rows="4"
@@ -187,8 +209,8 @@ const handleSubmit = async () => {
               >Contact Email</label
             >
             <input
-              v-model="form.company.contactEmail"
               type="email"
+              v-model="form.company.contactEmail"
               id="contact_email"
               name="contact_email"
               class="border rounded w-full py-2 px-3"
@@ -203,8 +225,8 @@ const handleSubmit = async () => {
               >Contact Phone</label
             >
             <input
-              v-model="form.company.contactPhone"
               type="tel"
+              v-model="form.company.contactPhone"
               id="contact_phone"
               name="contact_phone"
               class="border rounded w-full py-2 px-3"
@@ -217,11 +239,11 @@ const handleSubmit = async () => {
               class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
               type="submit"
             >
-              Add Job
+              Update Job
             </button>
           </div>
         </form>
       </div>
     </div>
   </section>
-  </template>
+</template>
